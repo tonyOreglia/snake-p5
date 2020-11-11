@@ -1,10 +1,10 @@
 var snake;
 var food;
-var gridScale = 15;
+var gridScale = 30;
 
 function setup() {
-    createCanvas(300, 300);
-    frameRate(6);
+    createCanvas(600, 600);
+    frameRate(8);
     food = new Food();
     snake = new Snake(food);
 }
