@@ -1,10 +1,12 @@
 var snake;
 var food;
-var gridScale = 30;
+var gridScale = 10;
+var framesPerSecond = 8;
+var foodSpinAngle = 60;
 
 function setup() {
-    createCanvas(600, 600);
-    frameRate(8);
+    createCanvas(200, 200);
+    frameRate(framesPerSecond);
     food = new Food();
     snake = new Snake(food);
 }
@@ -24,13 +26,48 @@ function keyPressed() {
     }
 }
 
+function detectMouse() {
+    console.log('mouse x: ', mouseX);
+    console.log('mouse y: ', mouseY);
+    fill('red');
+    // left
+    if (mouseX > 0 && mouseX <= (width / gridScale) && snake.xSpeed <= 0 && snake.tail[0] && snake.tail[0].x >= snake.x) {
+        rect(0, 0, width / gridScale, height);
+        snake.dir(-1, 0);
+    }
+    // right
+    else if (mouseX >= width - width / gridScale && mouseX < width && snake.xSpeed >= 0 && snake.tail[0] && snake.tail[0].x <= snake.x) {
+        rect(width - width / gridScale, 0, width / 10, height);
+        snake.dir(1, 0);
+    }
+    // down
+    else if (mouseY >= height - height / gridScale && mouseY < height && snake.ySpeed >= 0 && snake.tail[0] && snake.tail[0].y <= snake.y) {
+        rect(0, height - height / gridScale, width, height / gridScale);
+        snake.dir(0, 1);
+    }
+    // up 
+    else if (mouseY >= 0 && mouseY < height / gridScale && snake.ySpeed <= 0 && snake.tail[0] && snake.tail[0].y >= snake.y) {
+        rect(0, 0, width, height / gridScale);
+        snake.dir(0, -1);
+    }
+}
+
 function draw() {
     background(51);
-    if (mouseIsPressed) {
-        snake.tailLength = snake.tailLength + 1;
-    }
+    fill('grey');
+    // left
+    rect(0, 0, width / gridScale, height);
+    // right
+    rect(width - width / gridScale, 0, width / 10, height);
+    // top
+    rect(0, 0, width, height / gridScale);
+    // bottom
+    rect(0, height - height / gridScale, width, height / gridScale);
+
+    detectMouse();
     snake.update();
     snake.show();
+    food.spin();
     food.show();
     snake.eat();
 }
@@ -38,17 +75,24 @@ function draw() {
 function Food() {
     this.x = 0;
     this.y = 0;
+    this.rotation = 0;
 
     this.updateLocation = function () {
         this.x = Math.floor(Math.floor(Math.random() * width) / gridScale) * gridScale;
         this.y = Math.floor(Math.floor(Math.random() * height) / gridScale) * gridScale;
     }
 
+    this.spin = function() {
+        this.rotation = this.rotation + foodSpinAngle;
+    }
+
     this.show = function () {
         fill('green');
-        rect(this.x, this.y, gridScale, gridScale);
-        // circle(this.x + gridScale / 2, this.y + gridScale / 2, gridScale);
+        translate(this.x + gridScale / 2, this.y + gridScale/2);
+        rotate(this.rotation);
+        rect(-gridScale/2, -gridScale/2, gridScale, gridScale);
     }
+
     this.updateLocation();
 }
 
@@ -58,8 +102,9 @@ function Snake(food) {
     this.xSpeed = 1;
     this.ySpeed = 0;
     this.tail = [];
+    this.tailColors = []
     this.tailLength = 0;
-    this.snakeColor = 'white';
+    this.snakeColor = 'blue';
 
     this.dir = function(x, y) {
         this.xSpeed = x;
@@ -73,7 +118,7 @@ function Snake(food) {
             noLoop();
             return;
         }
-        this.snakeColor = 'white';
+        this.snakeColor = 'blue';
         if (this.hittingSelf()) {
             this.snakeColor = 'red';
             return;
@@ -84,15 +129,13 @@ function Snake(food) {
         this.tail[0] = { x: this.x, y: this.y };
         this.x = this.x + this.xSpeed * gridScale;
         this.y = this.y + this.ySpeed * gridScale;
-        this.x = constrain(this.x, 0, width - gridScale);
-        this.y = constrain(this.y, 0, height - gridScale);
     }
 
     this.hittingWall = function () {
-        return ((this.x === 0 && this.xSpeed < 0) || 
+        return ((this.x === 0 && this.xSpeed < 0) ||
         (this.y === 0 && this.ySpeed < 0) || 
         (this.x === width - gridScale && this.xSpeed > 0) || 
-        (this.y === height - gridScale && this.ySpeed > 0)) 
+        (this.y === height - gridScale && this.ySpeed > 0))
     }
 
     this.hittingSelf = function () {
@@ -106,19 +149,41 @@ function Snake(food) {
     }
     
     this.show = function () {
-        fill(this.snakeColor);
-        rect(this.x, this.y, gridScale, gridScale);
-        // circle(this.x + gridScale / 2, this.y + gridScale / 2, gridScale);
+        this.showSnakeHead(this.x, this.y, gridScale, this.snakeColor);
         for (let i = 0; i < this.tailLength; i++) {
             let sq = this.tail[i];
-            rect(sq.x, sq.y, gridScale, gridScale);
-            // circle(sq.x + gridScale / 2, sq.y + gridScale / 2, gridScale);
+            let color = this.tailColors[i]
+            this.showSnakeCell(sq.x + gridScale / 2, sq.y + gridScale / 2, gridScale, color);
         }
     };
+
+    this.showSnakeHead = function (x, y, size, color) {
+        push();
+        fill(color);
+        if (color === 'red') {
+            circle(x + gridScale / 2, y + gridScale / 2, size * 1.5);
+        } else {
+            circle(x + gridScale / 2, y + gridScale / 2, size / 1.5);
+        }
+        if (this.xSpeed !== 0) {
+            line(x, y + gridScale / 2, x + gridScale, y + gridScale / 2, size, size);
+        } else {
+            line(x + gridScale / 2, y, x + gridScale / 2, y + gridScale, size, size);
+        }
+        pop();
+    }
+
+    this.showSnakeCell = function (x, y, size, color) {
+        push();
+        fill(color.red, color.green, color.blue);
+        circle(x, y, size);
+        pop();
+    }
 
     this.eat = function () {
         if (this.x === food.x && this.y === food.y) {
             this.tailLength = this.tailLength + 1;
+            this.tailColors.push({ red: Math.random() * 250, blue: Math.random() * 250, green: Math.random() * 250 })
             food.updateLocation();
             for (let i = 0; i < this.tailLength; i++) {
                 sq = this.tail[i];
