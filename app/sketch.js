@@ -1,11 +1,11 @@
 var snake;
 var food;
-var gridScale = 10;
+var gridScale = 25;
 var framesPerSecond = 8;
 var foodSpinAngle = 60;
 
 function setup() {
-    createCanvas(200, 200);
+    createCanvas(500, 500);
     frameRate(framesPerSecond);
     food = new Food();
     snake = new Snake(food);
