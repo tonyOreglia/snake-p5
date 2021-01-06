@@ -3,6 +3,7 @@ var food;
 var gridScale = 25;
 var framesPerSecond = 8;
 var foodSpinAngle = 60;
+var borderRectWidth = gridScale * 2
 
 function setup() {
     createCanvas(500, 500);
@@ -11,43 +12,38 @@ function setup() {
     snake = new Snake(food);
 }
 
-function keyPressed() {
-    if (keyCode === LEFT_ARROW && snake.xSpeed <= 0 && snake.tail[0].x >= snake.x) {
-        snake.dir(-1, 0);
-    }
-    else if (keyCode === RIGHT_ARROW && snake.xSpeed >= 0 && snake.tail[0].x <= snake.x) {
-        snake.dir(1, 0);
-    }
-    else if (keyCode === DOWN_ARROW && snake.ySpeed >= 0 && snake.tail[0].y <= snake.y) {
-        snake.dir(0, 1);
-    }
-    else if (keyCode === UP_ARROW && snake.ySpeed <= 0 && snake.tail[0].y >= snake.y) {
-        snake.dir(0, -1);
-    }
-}
+// function keyPressed() {
+//     if (keyCode === LEFT_ARROW && snake.xSpeed <= 0 && snake.tail[0].x >= snake.x) {
+//         snake.dir(-1, 0);
+//     }
+//     else if (keyCode === RIGHT_ARROW && snake.xSpeed >= 0 && snake.tail[0].x <= snake.x) {
+//         snake.dir(1, 0);
+//     }
+//     else if (keyCode === DOWN_ARROW && snake.ySpeed >= 0 && snake.tail[0].y <= snake.y) {
+//         snake.dir(0, 1);
+//     }
+//     else if (keyCode === UP_ARROW && snake.ySpeed <= 0 && snake.tail[0].y >= snake.y) {
+//         snake.dir(0, -1);
+//     }
+// }
 
 function detectMouse() {
-    console.log('mouse x: ', mouseX);
-    console.log('mouse y: ', mouseY);
     fill('red');
-    // left
-    if (mouseX > 0 && mouseX <= (width / gridScale) && snake.xSpeed <= 0 && snake.tail[0] && snake.tail[0].x >= snake.x) {
-        rect(0, 0, width / gridScale, height);
+
+    if (mouseX > 0 && mouseX <= borderRectWidth * 2 && snake.xSpeed <= 0 && snake.tail[0] && snake.tail[0].x >= snake.x) {
+        rect(0, 0, borderRectWidth, height);
         snake.dir(-1, 0);
     }
-    // right
-    else if (mouseX >= width - width / gridScale && mouseX < width && snake.xSpeed >= 0 && snake.tail[0] && snake.tail[0].x <= snake.x) {
-        rect(width - width / gridScale, 0, width / 10, height);
+    else if (mouseX >= width - borderRectWidth*2 && mouseX < width && snake.xSpeed >= 0 && snake.tail[0] && snake.tail[0].x <= snake.x) {
+        rect(width - borderRectWidth, 0, borderRectWidth, height);
         snake.dir(1, 0);
     }
-    // down
-    else if (mouseY >= height - height / gridScale && mouseY < height && snake.ySpeed >= 0 && snake.tail[0] && snake.tail[0].y <= snake.y) {
-        rect(0, height - height / gridScale, width, height / gridScale);
+    else if (mouseY >= height - borderRectWidth*2 && mouseY < height && snake.ySpeed >= 0 && snake.tail[0] && snake.tail[0].y <= snake.y) {
+        rect(0, height - borderRectWidth, width, borderRectWidth);
         snake.dir(0, 1);
     }
-    // up 
-    else if (mouseY >= 0 && mouseY < height / gridScale && snake.ySpeed <= 0 && snake.tail[0] && snake.tail[0].y >= snake.y) {
-        rect(0, 0, width, height / gridScale);
+    else if (mouseY > 0 && mouseY < borderRectWidth*2 && snake.ySpeed <= 0 && snake.tail[0] && snake.tail[0].y >= snake.y) {
+        rect(0, 0, width, borderRectWidth);
         snake.dir(0, -1);
     }
 }
@@ -55,16 +51,11 @@ function detectMouse() {
 function draw() {
     background(51);
     fill('grey');
-    // left
-    rect(0, 0, width / gridScale, height);
-    // right
-    rect(width - width / gridScale, 0, width / 10, height);
-    // top
-    rect(0, 0, width, height / gridScale);
-    // bottom
-    rect(0, height - height / gridScale, width, height / gridScale);
 
+    noFill();
+    square(borderRectWidth*2,borderRectWidth*2,borderRectWidth*6)
     detectMouse();
+
     snake.update();
     snake.show();
     food.spin();
